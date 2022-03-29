@@ -181,6 +181,10 @@ def follow_ip(ip, max_pck=5000):
                 #ICMP protocol
                 if proto_ip == 1:
                     icmp_type, code, checksum, data_icmp = icmp_packet(data_ip)
+                    if icmp_type == 0:
+                        icmp_type = 'Echo reply'
+                    elif icmp_type == 8:
+                        icmp_type = 'Echo request'
                     print('\t\t [+] ICMP packet:')
                     print('\t\t\tType: {}\n\t\t\tCode: {}\n\t\t\tChecksum: {}'.format(icmp_type,code,checksum))
 
@@ -224,16 +228,32 @@ def follow_ip(ip, max_pck=5000):
                     print(color('\t\t [+] Another protocol packet:','green'))
                     print_data(data_ip)
 
+                nr_pck += 1
+
         #ARP protocol
-        elif eth_proto == 1544:
-            print(color('\t\t [+] ARP packet:','red', 'on_grey'))
-            print_data(data_eth)
+        elif eth_proto == 1544 :
+            opcode, sender_mac,sender_ip, target_mac, target_ip = arp_packet(data_eth)
+            if sender_ip == ip or target_ip == ip:
+                if opcode == 1:
+                    opcode = 'request'
+                else:
+                    opcode = 'reply'
+                print('\n'+str(nr_pck)+') [+] Ethernet frame:')
+                print('\tDestination: {}\n\tSource: {}\n\tProtocol: {}'.format(dest_mac, src_mac, eth_proto))
+                print(color('\t [+] ARP packet:','red', 'on_grey'))
+                print(color('\t\tOpcode: {}\n\t\tSender MAC: {}'.format(opcode, sender_mac),'white'))
+                print(color('\t\tSender IP: {}\n\t\tTarget MAC: {}'.format(sender_ip, target_mac),'white'))
+                print(color('\t\tTarget IP: {}'.format(target_ip),'white'))
+
+                nr_pck += 1
+
 
         else:
-            print(color('\t [+] NOT IP packet:','yellow'))
-            print_data(data_eth)
+            pass
+            #print(color('\t [+] NOT IP packet:','yellow'))
+            #print_data(data_eth)
 
-        nr_pck += 1
+        #nr_pck += 1
     s.close()
     sys.exit(0)
 
@@ -298,7 +318,7 @@ def follow_all(max_pck=5000):
                                     print_ascii(byte)
                                 else:
                                     print(color(r'\x{:02}'.format(byte),'white'),sep='')
-
+            #DNS protocol
             elif proto_ip == 17: #TODO better
                 print(color('\t\t [+] DNS packet:','green'))
                 print_data(data_ip)
