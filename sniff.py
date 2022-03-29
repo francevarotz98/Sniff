@@ -179,7 +179,7 @@ def follow_ip(ip, max_pck=5000):
                     print('\t\t [+] ICMP packet:')
                     print('\t\t\tType: {}\n\t\t\tCode: {}\n\t\t\tChecksum: {}'.format(icmp_type,code,checksum))
 
-                    #TCP Protocol
+                #TCP Protocol
                 elif proto_ip == 6:
                         (src_port, dest_port, seq, ack, flags_urg,flags_ack,flags_psh,flags_rst,flags_syn,flags_fin,data_tcp) = tcp_segment(data_ip)
                         print(color('\t\t [+] TCP packet:','magenta'))
@@ -209,6 +209,16 @@ def follow_ip(ip, max_pck=5000):
                                         print_ascii(byte)
                                     else:
                                         print(color(r'\x{:02}'.format(byte),'white'),sep='')
+                #DNS protocol
+                elif proto_ip == 17: #TODO better
+                    print(color('\t\t [+] DNS packet:','green'))
+                    print(color('\t\t\tData: {}'.format(data_ip),'green'))
+
+                #all the other protocol above IP
+                else: #TODO WITH OTHER PROTOCOLS
+                    print(color('\t\t [+] Another protocol packet:','green'))
+                    print(color('\t\t\tData: {}'.format(data_ip),'green'))
+
 
                 nr_pck += 1
     s.close()
@@ -232,6 +242,7 @@ def follow_all(max_pck=5000):
             version_ip, header_length_ip, ttl_ip, proto_ip, src_ip, target_ip, data_ip = ipv4_packet(data_eth)
             print(color('\t [+] IPv4 packet:','red'))
             print(color('\t\tDestination: {}\n\t\tSource: {}'.format(target_ip, src_ip),'red'))
+            #TODO: al posto di proto_ip in numero, mettere il nome a parole
             print(color('\t\tProtocol: {}\n\t\tTTL: {}\n\t\tVersion: {}'.format(proto_ip, ttl_ip, version_ip),'red'))
 
             #ICMP protocol
@@ -270,6 +281,15 @@ def follow_all(max_pck=5000):
                                     print_ascii(byte)
                                 else:
                                     print(color(r'\x{:02}'.format(byte),'white'),sep='')
+
+            elif proto_ip == 17: #TODO better
+                print(color('\t\t [+] DNS packet:','green'))
+                print(color('\t\t\tData: {}'.format(data_ip),'green'))
+
+            #all the other protocol above IP
+            else: #TODO WITH OTHER PROTOCOLS
+                print(color('\t\t [+] Another protocol packet:','green'))
+                print(color('\t\t\tData: {}'.format(data_ip),'green'))
 
         nr_pck += 1
     s.close()
@@ -367,7 +387,7 @@ if __name__ == '__main__':
         except:
             print('[-] Not correct \''+ip+'\' IP address.\nExit ...')
             sys.exit(1)
-            
+
         if ('-p' in sys.argv):
             #max number of packet to sniff
             max_pck = sys.argv[sys.argv.index('-p')+1]
